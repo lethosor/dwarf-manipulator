@@ -15,7 +15,7 @@ elseif iargs['--no-profile'] then
     PROFILE = false
 end
 
-VERSION = '0.7.0'
+VERSION = '0.7.2'
 PROFILE = PROFILE or false
 
 if PROFILE then
