@@ -35,10 +35,12 @@ name_callbacks = {
 }
 
 function apply_batch(units, func, ...)
+    p_start('apply_batch')
     for _, u in pairs(units) do
         func(u, ...)
-        u.labors_dirty = true
+        u.dirty = true
     end
+    p_end('apply_batch')
 end
 
 batch_ops = defclass(batch_ops, gui.FramedScreen)
