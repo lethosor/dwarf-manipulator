@@ -61,6 +61,14 @@ batch_ops.ATTRS = {
 
 function batch_ops:init(args)
     self.units = check_nil(args.units)
+    self.parent = check_nil(args.parent)
+    if self.parent.focus_path ~= 'manipulator' then error('Invalid context') end
+    self.columns = {}
+    for _, col in pairs(self.parent.all_columns) do
+        if col.allow_format then
+            table.insert(self.columns, col)
+        end
+    end
     self.sel_idx = 1
 end
 
@@ -105,11 +113,11 @@ function batch_ops:onInput(keys)
 end
 
 function batch_ops:edit_nickname()
-    name_editor({units = self.units, name = NICKNAME}):show()
+    name_editor({parent = self, units = self.units, name = NICKNAME}):show()
 end
 
 function batch_ops:edit_profname()
-    name_editor({units = self.units, name = PROFNAME}):show()
+    name_editor({parent = self, units = self.units, name = PROFNAME}):show()
 end
 
 function batch_ops:handle_labors(callback)
@@ -156,6 +164,10 @@ name_editor.ATTRS = {
 }
 
 function name_editor:init(opts)
+    self.formatter = StringFormatter()
+    for _, col in pairs(opts.parent.columns) do
+        self.formatter:add_option(col.spec, col.desc, col.callback)
+    end
     self.units = opts.units
     self.name = opts.name
     self.name_desc = opts.name == NICKNAME and 'Nickname' or 'Profession Name'
@@ -167,17 +179,32 @@ function name_editor:onRenderBody(p)
     local max_width = p.clip_x2 - p.clip_x1
     p.clip_x1 = p.clip_x1 - 1
     p.clip_x2 = p.clip_x2 + 1
-    local entry = self.entry
     draw_names(self.units)
     p:seek(0, 2):string('Custom ' .. self.name_desc .. ':')
     p:newline()
-    if #entry > max_width then
-        entry = entry:sub(-max_width)
+    local start = 1
+    if #self.entry > max_width + 1 then
+        start = #self.entry - max_width
         p:seek(-1):string('<', COLOR_LIGHTCYAN)
     end
-    p:seek(0):string(entry, COLOR_WHITE):string('_', COLOR_LIGHTCYAN)
+    p:seek(0)
+    local tokens = self.formatter:tokenize(self.entry)
+    local pos = 0
+    for _, t in pairs(tokens) do
+        for i = 1, #t.text do
+            pos = pos + 1
+            if pos >= start then
+                p:string(t.text:sub(i, i), {fg = t.opt and COLOR_LIGHTCYAN or COLOR_WHITE})
+            end
+        end
+    end
+    p:string('_', COLOR_LIGHTCYAN)
     p:newline():newline()
     p:seek(0):string('(Leave blank to use original name)', COLOR_DARKGREY)
+    p:newline():newline()
+    for _, opt in pairs(self.formatter.options) do
+        p:string('%' .. opt.spec, {fg = COLOR_LIGHTCYAN}):string(': ' .. opt.desc):newline()
+    end
 end
 
 function name_editor:onInput(keys)

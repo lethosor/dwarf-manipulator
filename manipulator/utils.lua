@@ -285,7 +285,8 @@ function Column:init(args)
     self.title = check_nil(field('title'), 'No title given', true)
     self.desc = args.desc or self.title
     self.allow_display = if_nil(field('allow_display'), true)
-    self.allow_format = if_nil(field('allow_format'), true)
+    self.allow_format = if_nil(field('allow_format'), true) and type(args.spec) == 'string'
+    self.spec = args.spec
     self.default = if_nil(field('default'), false)
     self.highlight = if_nil(field('highlight'), false)
     self.right_align = if_nil(field('right_align'), false)
@@ -505,4 +506,89 @@ end
 
 function labors.special(labor)
     return labors.get_column(labor).special
+end
+
+StringFormatter = defclass(StringFormatter)
+function StringFormatter:init()
+    self.options = {}
+    self.callback_map = {}
+end
+
+function StringFormatter:add_option(spec, desc, callback)
+    if self.callback_map[spec] then
+        error('Duplicate option: ' .. spec)
+    end
+    self.callback_map[spec] = callback
+    table.insert(self.options, {spec = spec, desc = desc, callback = callback})
+end
+
+function StringFormatter:grab_opt(str)
+    local candidate = ''
+    for _, opt in pairs(self.options) do
+        if opt.spec == str:sub(1, #opt.spec) and #opt.spec > #candidate then
+            candidate = opt.spec
+        end
+    end
+    if #candidate > 0 then
+        return candidate
+    end
+end
+
+function StringFormatter:tokenize(format)
+    local ret = {{text='', opt=false}}
+    local in_opt = false
+    local last_ops_pos = 1
+    local i = 1
+    while i <= #format do
+        local ch = format:sub(i, i)
+        if in_opt then
+            if ch == '%' then
+                -- escape: %% -> %
+                in_opt = false
+                ret[#ret].text = ret[#ret].text .. '%'
+                i = i + 1
+            else
+                local opt = self:grab_opt(format:sub(i))
+                if opt then
+                    table.insert(ret, {text='%'..opt, opt=opt})
+                    table.insert(ret, {text='', opt=false})
+                    i = i + #opt
+                    in_opt = false
+                    if i <= #format and format:sub(i, i) == '$' then
+                        -- Allow $ to terminate format options
+                        i = i + 1
+                        ret[#ret - 1].text = ret[#ret - 1].text .. '$'
+                    end
+                else
+                    -- Unrecognized format option; replace with original text
+                    ret[#ret].text = ret[#ret].text .. '%'
+                    in_opt = false
+                end
+            end
+        else
+            if ch == '%' then
+                in_opt = true
+                last_ops_pos = i
+            else
+                ret[#ret].text = ret[#ret].text .. ch
+            end
+            i = i + 1
+        end
+    end
+    if in_opt then
+        table.insert(ret, {text=format:sub(last_ops_pos), opt=false})
+    end
+    return ret
+end
+
+function StringFormatter:format(object, format)
+    local tokens = self:tokenize(format)
+    local ret = ''
+    for _, t in pairs(tokens) do
+        if t.opt then
+            ret = ret .. tostring(self.callback_map[t.opt](object))
+        else
+            ret = ret .. t.text
+        end
+    end
 end

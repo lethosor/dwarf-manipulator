@@ -35,7 +35,7 @@ Valid parameters to Column{}:
 ]]
 
 if not Column then
-    qerror('Must be invoked from gui/manipulator')
+    qerror('Must be invoked from manipulator')
 end
 
 Column{

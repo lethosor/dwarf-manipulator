@@ -409,7 +409,7 @@ function manipulator:onInput(keys)
         end
         self.selection_state = nil
     elseif keys.CUSTOM_E then
-        mgui.batch_ops({units = {cur_unit}}):show()
+        mgui.batch_ops({parent = self, units = {cur_unit}}):show()
     elseif keys.CUSTOM_B then
         local units = {}
         for _, u in pairs(self.units) do
@@ -417,7 +417,7 @@ function manipulator:onInput(keys)
                 table.insert(units, u)
             end
         end
-        mgui.batch_ops({units = units}):show()
+        mgui.batch_ops({parent = self, units = units}):show()
     elseif keys.CUSTOM_D then
         self.diff_enabled = not self.diff_enabled
         self:draw_grid()
