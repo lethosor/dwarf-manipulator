@@ -103,6 +103,7 @@ Column{
 
 Column{
     id = 'name',
+    spec = 'n',
     callback = function(unit)
         return dfhack.TranslateName(unit.name)
     end,
@@ -120,7 +121,20 @@ Column{
 }
 
 Column{
+    id = 'engname',
+    title = 'English name',
+    spec = 'en',
+    base = 'name',
+    callback = function(unit)
+        return dfhack.TranslateName(unit.name, true)
+    end,
+}
+
+Column{
     id = 'profession',
+    title = 'Profession',
+    desc = 'Displayed profession',
+    spec = 'p',
     callback = wrap(dfhack.units.getProfessionName),
     color = function(unit)
         if unit.on_fire then
@@ -134,7 +148,6 @@ Column{
         return color
     end,
     disable_color_cache = true,
-    title = 'Profession',
     default = true,
     on_click = function(unit, buttons, mods)
         if buttons.left then
@@ -143,6 +156,48 @@ Column{
             manipulator.zoom_unit(unit)
         end
     end
+}
+
+Column{
+    id = 'real_profession',
+    title = 'Real profession',
+    desc = 'Real profession (non-customized)',
+    spec = 'P',
+    base = 'profession',
+    callback = function(unit)
+        local tmp = unit.custom_profession
+        unit.custom_profession = ''
+        local ret = dfhack.units.getProfessionName(unit._native)
+        unit.custom_profession = tmp
+        return ret
+    end,
+}
+
+Column{
+    id = 'base_profession',
+    title = 'Base profession',
+    desc = 'Base profession (excluding nobles & other positions)',
+    spec = 'bp',
+    base = 'profession',
+    callback = function(unit)
+        return df.profession.attrs[unit.profession].caption
+    end
+}
+
+Column{
+    id = 'short_profession',
+    title = 'Short profession name',
+    desc = 'Short (base) profession abbreviation, from grid headers',
+    spec = 'sp',
+    base = 'profession',
+    callback = function(unit)
+        for _, c in pairs(SKILL_COLUMNS) do
+            if c.profession == unit.profession then
+                return c.label
+            end
+        end
+        return '??'
+    end,
 }
 
 Column{

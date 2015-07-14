@@ -8,7 +8,7 @@ end
 
 function check_nil(v, msg, traceback)
     if v == nil then
-        (traceback and error or qerror)(msg ~= nil and msg or 'nil value')
+        (traceback and error or qerror)(msg ~= nil and msg or 'nil value', 2)
     end
     return v
 end
@@ -268,29 +268,36 @@ end
 Column = defclass(Column)
 
 function Column:init(args)
+    if args.base ~= nil then
+        self.base = check_nil(find_column(args._columns or {}, args.base), 'Base column not found: ' .. tostring(args.base))
+    end
+    local base = self.base or {}
+    local function field(name)
+        return args[name] or base[name]
+    end
     self.id = check_nil(args.id, 'No column ID given', true)
-    self.callback = check_nil(args.callback, 'No callback given', true)
-    self.color = check_nil(args.color, 'No color or color callback given', true)
+    self.callback = check_nil(field('callback'), 'No callback given', true)
+    self.color = check_nil(field('color'), 'No color or color callback given', true)
     if type(self.color) ~= 'function' then
         local _c = self.color
         self.color = function() return _c end
     end
-    self.title = check_nil(args.title, 'No title given', true)
+    self.title = check_nil(field('title'), 'No title given', true)
     self.desc = args.desc or self.title
-    self.allow_display = if_nil(args.allow_display, true)
-    self.allow_format = if_nil(args.allow_format, true)
-    self.default = if_nil(args.default, false)
-    self.highlight = if_nil(args.highlight, false)
-    self.right_align = if_nil(args.right_align, false)
-    self.max_width = if_nil(args.max_width, 0)
+    self.allow_display = if_nil(field('allow_display'), true)
+    self.allow_format = if_nil(field('allow_format'), true)
+    self.default = if_nil(field('default'), false)
+    self.highlight = if_nil(field('highlight'), false)
+    self.right_align = if_nil(field('right_align'), false)
+    self.max_width = if_nil(field('max_width'), 0)
     self.cache = {}
     self.color_cache = {}
-    self.disable_cache = if_nil(args.disable_cache, false)
-    self.disable_color_cache = if_nil(args.disable_color_cache, false)
+    self.disable_cache = if_nil(field('disable_cache'), false)
+    self.disable_color_cache = if_nil(field('disable_color_cache'), false)
     self.width = #self.title
-    self.on_click = if_nil(args.on_click, function() end)
-    self.cmp_units = args.compare_units
-    self.cmp_values = args.compare_values
+    self.on_click = if_nil(field('on_click'), function() end)
+    self.cmp_units = field('compare_units')
+    self.cmp_values = field('compare_values')
 end
 
 function Column:lookup(unit)
@@ -339,10 +346,21 @@ function column_wrap_func(func)
     end
 end
 
+function find_column(columns, id)
+    for _, col in pairs(columns) do
+        if col.id == id then
+            return col
+        end
+    end
+end
+
 function load_columns(scr)
     local columns = {}
     local env = {
-        Column = function(args) table.insert(columns, Column(args)) end,
+        Column = function(args)
+            args._columns = columns
+            table.insert(columns, Column(args))
+        end,
         wrap = column_wrap_func,
         manipulator = {
             view_unit = scr:callback('view_unit'),
