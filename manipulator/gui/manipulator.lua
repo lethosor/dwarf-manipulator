@@ -181,27 +181,32 @@ function manipulator:onRenderBody(p)
     local col = SKILL_COLUMNS[self.grid_idx]
     do
         local p = gui.Painter.new_wh(2, 1, gps.dimx - 3, 1)
-        p:pen{fg = COLOR_DARKGREY}
-        p:seek(0, 0):string('Labor changes: ')
-        if self.labor_changes.added ~= 0 or self.labor_changes.removed ~= 0 then
-            if self.labor_changes.added ~= 0 then
-                p:string('+' .. self.labor_changes.added, COLOR_GREEN)
-            end
-            if self.labor_changes.removed ~= 0 then
-                p:string('-' .. self.labor_changes.removed, COLOR_RED)
-            end
+        p:seek(0, 0)
+        if self.autolabor and self.autolabor.active then
+            p:string('autolabor enabled', COLOR_RED)
         else
-            p:string('None')
-        end
-        if unit.labor_changes.added ~= 0 or unit.labor_changes.removed ~= 0 then
-            p:string(' (Unit: ')
-            if unit.labor_changes.added ~= 0 then
-                p:string('+' .. unit.labor_changes.added, COLOR_GREEN)
+            p:pen{fg = COLOR_DARKGREY}
+            p:string('Labor changes: ')
+            if self.labor_changes.added ~= 0 or self.labor_changes.removed ~= 0 then
+                if self.labor_changes.added ~= 0 then
+                    p:string('+' .. self.labor_changes.added, COLOR_GREEN)
+                end
+                if self.labor_changes.removed ~= 0 then
+                    p:string('-' .. self.labor_changes.removed, COLOR_RED)
+                end
+            else
+                p:string('None')
             end
-            if unit.labor_changes.removed ~= 0 then
-                p:string('-' .. unit.labor_changes.removed, COLOR_RED)
+            if unit.labor_changes.added ~= 0 or unit.labor_changes.removed ~= 0 then
+                p:string(' (Unit: ')
+                if unit.labor_changes.added ~= 0 then
+                    p:string('+' .. unit.labor_changes.added, COLOR_GREEN)
+                end
+                if unit.labor_changes.removed ~= 0 then
+                    p:string('-' .. unit.labor_changes.removed, COLOR_RED)
+                end
+                p:string(')')
             end
-            p:string(')')
         end
     end
     p:pen{fg = COLOR_WHITE}
@@ -503,6 +508,7 @@ function manipulator:update_labor_changes()
 end
 
 function manipulator:set_labor(x, y, state)
+    if not self:can_set_labors() then return end
     local unit = self.units[y] or error('Invalid unit ID: ' .. y)
     local labor = SKILL_COLUMNS[x].labor or error('Invalid column id: ' .. x)
     local changed = false
@@ -512,6 +518,25 @@ function manipulator:set_labor(x, y, state)
     end
     labors.set(unit, labor, state, cb)
     unit.labors_dirty = true
+end
+
+function manipulator:can_set_labors()
+    if not self.autolabor then self.autolabor = {} end
+    if self.autolabor.active == nil then
+        self.autolabor.active = (dfhack.run_command_silent('enable'):match('autolabor:%s+(%w+)') == 'on')
+    end
+    if self.autolabor.active then
+        if not self.autolabor.warned then
+            mgui.autolabor_warning{
+                on_disable = function()
+                    self.autolabor = {}
+                end
+            }:show()
+            self.autolabor.warned = true
+        end
+        return false
+    end
+    return true
 end
 
 function manipulator:toggle_labor(x, y)
