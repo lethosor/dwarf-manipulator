@@ -287,7 +287,7 @@ function Column:init(args)
     self.allow_display = if_nil(field('allow_display'), true)
     self.allow_format = if_nil(field('allow_format'), true) and type(args.spec) == 'string'
     self.spec = args.spec
-    self.default = if_nil(field('default'), false)
+    self.default = if_nil(args.default, false)
     self.highlight = if_nil(field('highlight'), false)
     self.right_align = if_nil(field('right_align'), false)
     self.max_width = if_nil(field('max_width'), 0)
