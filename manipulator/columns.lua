@@ -194,7 +194,7 @@ Column{
     desc = 'Short (base) profession abbreviation, from grid headers',
     header = 'Prf',
     spec = 'sp',
-    base = 'profession',
+    base = 'base_profession',
     callback = function(unit)
         for _, c in pairs(SKILL_COLUMNS) do
             if c.profession == unit.profession then
