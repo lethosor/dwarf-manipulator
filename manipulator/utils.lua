@@ -591,4 +591,5 @@ function StringFormatter:format(object, format)
             ret = ret .. t.text
         end
     end
+    return ret
 end

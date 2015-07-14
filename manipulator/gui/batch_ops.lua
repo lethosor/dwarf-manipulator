@@ -26,11 +26,11 @@ function draw_names(units)
 end
 
 name_callbacks = {
-    [NICKNAME] = function(unit, name)
-        dfhack.units.setNickname(unit._native, name)
+    [NICKNAME] = function(unit, func)
+        dfhack.units.setNickname(unit._native, func(unit))
     end,
-    [PROFNAME] = function(unit, name)
-        unit.custom_profession = name
+    [PROFNAME] = function(unit, func)
+        unit.custom_profession = func(unit)
     end,
 }
 
@@ -213,7 +213,9 @@ function name_editor:onInput(keys)
         return
     end
     if keys.SELECT then
-        apply_batch(self.units, name_callbacks[self.name], self.entry)
+        apply_batch(self.units, name_callbacks[self.name], function(unit)
+            return self.formatter:format(unit, self.entry)
+        end)
         self:dismiss()
     elseif keys.STRING_A000 then
         self.entry = self.entry:sub(1, -2)
