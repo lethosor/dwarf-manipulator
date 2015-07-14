@@ -40,6 +40,8 @@ end
 
 Column{
     id = 'stress',
+    title = 'Stress',
+    spec = 'st',
     callback = function(unit)
         return unit.status.current_soul and unit.status.current_soul.personality.stress_level or 0
     end,
@@ -52,7 +54,6 @@ Column{
         else return COLOR_LIGHTGREEN
         end
     end,
-    title = 'Stress',
     default = true,
     right_align = true,
     on_click = function(unit, buttons, mods)
@@ -202,34 +203,42 @@ Column{
 
 Column{
     id = 'squad',
+    title = 'Squad',
+    desc = 'Squad name, if applicable',
+    spec = 's',
     callback = wrap(dfhack.units.getSquadName),
     color = COLOR_LIGHTCYAN,
-    title = 'Squad',
 }
 
 Column{
     id = 'job',
+    title = 'Job',
+    desc = 'Current job, or "No Job"',
+    spec = 'j',
     callback = function(unit)
         return unit.job.current_job and dfhack.job.getName(unit.job.current_job) or 'No Job'
     end,
     color = function(unit)
         return unit.job.current_job and COLOR_LIGHTCYAN or COLOR_YELLOW
     end,
-    title = 'Job',
 }
 
 Column{
     id = 'age',
+    title = 'Age',
+    desc = 'Age, in years',
+    spec = 'a',
     callback = function(unit)
         return math.floor(dfhack.units.getAge(unit._native))
     end,
     color = COLOR_GREY,
-    title = 'Age',
 }
 
 Column{
     id = 'kills',
     title = 'Kills',
+    desc = 'Number of kills',
+    spec = 'k',
     callback = wrap(dfhack.units.getKillCount),
     color = COLOR_GREY,
 }
