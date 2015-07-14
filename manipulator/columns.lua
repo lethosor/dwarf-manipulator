@@ -182,7 +182,10 @@ Column{
     base = 'profession',
     callback = function(unit)
         return df.profession.attrs[unit.profession].caption
-    end
+    end,
+    color = function(unit)
+        return df.profession.attrs[unit.profession].color
+    end,
 }
 
 Column{
