@@ -101,7 +101,7 @@ function manipulator:onRenderBody(p)
     local y = self.top_margin
     for id, col in pairs(self.columns) do
         col_start_x[id] = x
-        OutputString(COLOR_GREY, x, y, col.title)
+        OutputString(COLOR_GREY, x, y, col.header:sub(1, col.width))
         x = x + col.width + 1
     end
     local grid_start_x = x

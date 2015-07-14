@@ -189,6 +189,7 @@ Column{
     id = 'short_profession',
     title = 'Short profession name',
     desc = 'Short (base) profession abbreviation, from grid headers',
+    header = 'Prf',
     spec = 'sp',
     base = 'profession',
     callback = function(unit)
@@ -199,6 +200,7 @@ Column{
         end
         return '??'
     end,
+    max_width = 3,
 }
 
 Column{

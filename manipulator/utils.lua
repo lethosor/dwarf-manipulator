@@ -284,6 +284,7 @@ function Column:init(args)
     end
     self.title = check_nil(field('title'), 'No title given', true)
     self.desc = args.desc or self.title
+    self.header = args.header or self.title
     self.allow_display = if_nil(field('allow_display'), true)
     self.allow_format = if_nil(field('allow_format'), true) and type(args.spec) == 'string'
     self.spec = args.spec
