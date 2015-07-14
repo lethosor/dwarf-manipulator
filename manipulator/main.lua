@@ -139,12 +139,6 @@ for id, lvl in pairs(SKILL_LEVELS) do
 end
 p_end('validate grid')
 
-manipulator_columns = defclass(manipulator_columns, gui.FramedScreen)
-manipulator_columns.ATTRS = {
-    focus_path = 'manipulator/columns',
-    frame_title = 'Dwarf Manipulator - Columns',
-}
-
 function mkscreen(parent, opts)
     opts = opts or {}
     opts.units = parent.units[parent.page]

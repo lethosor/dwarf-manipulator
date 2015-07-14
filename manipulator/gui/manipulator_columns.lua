@@ -1,5 +1,11 @@
 if not manipulator_module then qerror('Only usable from within manipulator') end
 
+manipulator_columns = defclass(manipulator_columns, gui.FramedScreen)
+manipulator_columns.ATTRS = {
+    focus_path = 'manipulator/columns',
+    frame_title = 'Dwarf Manipulator - Columns',
+}
+
 function manipulator_columns:init(args)
     self.parent = args.parent
     if self.parent.focus_path ~= 'manipulator' then error('Invalid context') end
