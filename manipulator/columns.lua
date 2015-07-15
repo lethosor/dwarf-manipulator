@@ -201,7 +201,7 @@ Column{
                 return c.label
             end
         end
-        return '??'
+        return df.profession.attrs[unit.profession].caption:sub(1, 2)
     end,
     max_width = 3,
 }
