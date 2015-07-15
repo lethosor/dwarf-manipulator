@@ -184,6 +184,22 @@ function name_editor:init(opts)
     self.name_desc = opts.name == NICKNAME and 'Nickname' or 'Profession Name'
     self.frame_title = 'Dwarf Manipulator - Edit ' .. self.name_desc
     self.entry = ''
+    self.list_start = 1
+    self.list_page_height = 0
+    self.list_max = 0
+    self.bounds = {}
+end
+
+function name_editor:onResize(...)
+    name_editor.super.onResize(self, ...)
+    self.bounds.entry = {2, 0, gps.dimx - 3, 0}
+    self.bounds.list = {2, 0, gps.dimx - 3, 0}
+end
+
+function name_editor:get_mouse_list_index()
+    if in_bounds(gps.mouse_x, gps.mouse_y, self.bounds.list) then
+        return gps.mouse_y - self.bounds.list[2] + self.list_start
+    end
 end
 
 function name_editor:onRenderBody(p)
@@ -199,6 +215,8 @@ function name_editor:onRenderBody(p)
         p:seek(-1):string('<', COLOR_LIGHTCYAN)
     end
     p:seek(0)
+    self.bounds.entry[2] = p.y
+    self.bounds.entry[4] = p.y
     local tokens = self.formatter:tokenize(self.entry)
     local pos = 0
     for _, t in pairs(tokens) do
@@ -214,8 +232,25 @@ function name_editor:onRenderBody(p)
     p:seek(0):string('(Leave blank to use original name)', COLOR_DARKGREY)
     p:newline():newline()
     p:pen(COLOR_WHITE):string('Format options: ('):key('CUSTOM_ALT_H'):string(' for help)'):newline()
-    for _, opt in pairs(self.formatter.options) do
-        p:string('%' .. opt.spec, {fg = COLOR_LIGHTCYAN}):string(': ' .. opt.desc):newline()
+    if self.list_start ~= 1 then
+        p:seek(-1):string('\24', COLOR_LIGHTCYAN):seek(0)
+    end
+
+    self.bounds.list[2] = p.y
+    self.bounds.list[4] = math.min(p.y + #self.formatter.options - 1, p.clip_y2)
+    self.list_page_height = self.bounds.list[4] - self.bounds.list[2] + 1
+    self.list_max = #self.formatter.options - self.list_page_height + 1
+
+    local hover_idx = self:get_mouse_list_index()
+    for i, opt in pairs(self.formatter.options) do
+        if i >= self.list_start and p.y <= p.clip_y2 then
+            if p.y == p.clip_y2 and i < #self.formatter.options then
+                p:seek(-1):string('\25', COLOR_LIGHTCYAN):seek(0)
+            end
+            p:string('%' .. opt.spec, COLOR_LIGHTCYAN)
+            p:string(': ' .. opt.desc, i == hover_idx and COLOR_YELLOW or nil)
+            p:newline()
+        end
     end
 end
 
@@ -224,11 +259,19 @@ function name_editor:onInput(keys)
         self:dismiss()
         return
     end
+    if keys._MOUSE_L then
+        local list_idx = self:get_mouse_list_index()
+        if list_idx then
+            self.entry = self.entry .. '%' .. self.formatter.options[list_idx].spec
+        end
+    end
     if keys.SELECT then
         apply_batch(self.units, name_callbacks[self.name], function(unit)
             return self.formatter:format(unit, self.entry)
         end)
         self:dismiss()
+    elseif keys.STANDARDSCROLL_UP or keys.STANDARDSCROLL_DOWN then
+        self.list_start = scroll_index(self.list_start, keys.STANDARDSCROLL_UP and -1 or 1, 1, self.list_max)
     elseif keys.CUSTOM_ALT_H then
         dialogs.showMessage('Formatting help', self.help_text)
     elseif keys.STRING_A000 then
