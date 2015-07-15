@@ -161,6 +161,17 @@ name_editor.ATTRS = {
     focus_path = 'manipulator/batch/name',
     frame_style = gui.BOUNDARY_FRAME,
     frame_inset = 1,
+    help_text = ([[
+\7 Format options (or format specifiers) are colored in cyan and will be
+  replaced by their corresponding attributes of each unit selected.
+\7 Use "%%" to include a literal "%" symbol.
+\7 Use "$" to end options in ambiguous situations. For example, if "%x" and
+  "%xy" are valid options and you want to use "%x" followed by a literal "y",
+  use "%x$y". ($ symbols that will be treated in this way will be cyan - if
+  you want to use literal $ symbols, keep in mind that only characters
+  displayed in white will be used verbatim and add additional $ symbols as
+  necessary.)
+]]):gsub('\\7', '\7')
 }
 
 function name_editor:init(opts)
@@ -202,6 +213,7 @@ function name_editor:onRenderBody(p)
     p:newline():newline()
     p:seek(0):string('(Leave blank to use original name)', COLOR_DARKGREY)
     p:newline():newline()
+    p:pen(COLOR_WHITE):string('Format options: ('):key('CUSTOM_ALT_H'):string(' for help)'):newline()
     for _, opt in pairs(self.formatter.options) do
         p:string('%' .. opt.spec, {fg = COLOR_LIGHTCYAN}):string(': ' .. opt.desc):newline()
     end
@@ -217,6 +229,8 @@ function name_editor:onInput(keys)
             return self.formatter:format(unit, self.entry)
         end)
         self:dismiss()
+    elseif keys.CUSTOM_ALT_H then
+        dialogs.showMessage('Formatting help', self.help_text)
     elseif keys.STRING_A000 then
         self.entry = self.entry:sub(1, -2)
     elseif keys._STRING then
