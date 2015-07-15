@@ -40,6 +40,7 @@ function manipulator:init(args)
         if u._native == args.selected then
             self.list_idx = idx
         end
+        u.list_ids = {all = 0, profession = 0, group = 0}
         u.allow_edit = true
         if not dfhack.units.isOwnRace(u._native) or not dfhack.units.isOwnCiv(u._native) or
                 u.flags1.dead or not df.profession.attrs[u.profession].can_assign_labor then
@@ -67,6 +68,7 @@ function manipulator:init(args)
         end
         u.labor_changes = {added = 0, removed = 0}
     end
+    self:update_list_ids()
     p_end('init units')
     self:draw_grid()
     self.all_columns = load_columns(self)
@@ -263,6 +265,26 @@ function manipulator:onRenderBody(p)
             col_start_x[id] + col.width - 1, self.list_top_margin - 1}
     end
     OutputString({fg=COLOR_BLACK, bg=COLOR_DARKGREY}, 2, gps.dimy - 1, "manipulator " .. VERSION)
+end
+
+function manipulator:update_list_ids()
+    p_start('update_list_ids')
+    local prof_ids = {}
+    local group_ids = {}
+    for i, u in pairs(self.units) do
+        u.list_ids.all = i
+
+        prof_ids[u.profession] = (prof_ids[u.profession] or 0) + 1
+        u.list_ids.profession = prof_ids[u.profession]
+
+        local grp = u.profession
+        while df.profession.attrs[grp].parent ~= -1 do
+            grp = df.profession.attrs[grp].parent
+        end
+        group_ids[grp] = (group_ids[grp] or 0) + 1
+        u.list_ids.group = group_ids[grp]
+    end
+    p_end('update_list_ids')
 end
 
 function manipulator:update_grid_tile(x, y)
@@ -479,12 +501,14 @@ function manipulator:sort_skill(skill, descending)
     self.units = merge_sort(self.units, make_sort_order(sort.skill, descending, skill))
     self.selection_state = nil
     p_end('sort_skill')
+    self:update_list_ids()
 end
 
 function manipulator:sort_column(col, descending)
     p_start('sort_column')
     self.units = merge_sort(self.units, make_sort_order(sort.column, descending, col))
     p_end('sort_column')
+    self:update_list_ids()
 end
 
 function manipulator:update_labor_changes()

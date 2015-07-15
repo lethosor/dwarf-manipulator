@@ -189,6 +189,21 @@ Column{
 }
 
 Column{
+    id = 'profession_group',
+    title = 'Profession group',
+    desc = 'Profession group (e.g. Stoneworker, Fishery Worker)',
+    spec = 'pg',
+    base = 'base_profession',
+    callback = function(unit)
+        local p = unit.profession
+        while df.profession.attrs[p].parent ~= -1 do
+            p = df.profession.attrs[p].parent
+        end
+        return df.profession.attrs[p].caption
+    end,
+}
+
+Column{
     id = 'short_profession',
     title = 'Short profession name',
     desc = 'Short (base) profession abbreviation, from grid headers',
@@ -245,5 +260,44 @@ Column{
     desc = 'Number of kills',
     spec = 'k',
     callback = wrap(dfhack.units.getKillCount),
+    color = COLOR_GREY,
+}
+
+Column{
+    id = 'list_id',
+    title = 'List position',
+    desc = 'Position in list',
+    header = 'Pos',
+    spec = 'i',
+    callback = function(unit) return unit.list_ids.all end,
+    color = COLOR_GREY,
+}
+
+Column{
+    id = 'prof_id',
+    title = 'List position - profession',
+    desc = 'Position in list, among dwarves with same profession',
+    header = 'Prof Pos',
+    spec = 'pi',
+    callback = function(unit) return unit.list_ids.profession end,
+    color = COLOR_GREY,
+}
+
+Column{
+    id = 'group_id',
+    title = 'List position - group',
+    desc = 'Position in list, among dwarves in same profession group',
+    header = 'Grp Pos',
+    spec = 'gi',
+    callback = function(unit) return unit.list_ids.group end,
+    color = COLOR_GREY,
+}
+
+Column{
+    id = 'raw_id',
+    title = 'ID',
+    desc = 'Raw unit ID',
+    spec = 'ri',
+    callback = function(unit) return unit.id end,
     color = COLOR_GREY,
 }
