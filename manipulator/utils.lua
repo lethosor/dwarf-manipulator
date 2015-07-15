@@ -546,13 +546,14 @@ function StringFormatter:tokenize(format)
             if ch == '%' then
                 -- escape: %% -> %
                 in_opt = false
-                ret[#ret].text = ret[#ret].text .. '%'
+                table.insert(ret, {text='%%', opt='%'})
+                table.insert(ret, {text=''})
                 i = i + 1
             else
                 local opt = self:grab_opt(format:sub(i))
                 if opt then
                     table.insert(ret, {text='%'..opt, opt=opt})
-                    table.insert(ret, {text='', opt=false})
+                    table.insert(ret, {text=''})
                     i = i + #opt
                     in_opt = false
                     if i <= #format and format:sub(i, i) == '$' then
@@ -586,7 +587,10 @@ function StringFormatter:format(object, format)
     local tokens = self:tokenize(format)
     local ret = ''
     for _, t in pairs(tokens) do
-        if t.opt then
+        if t.opt == '%' then
+            print('%')
+            ret = ret .. '%'
+        elseif t.opt then
             ret = ret .. tostring(self.callback_map[t.opt](object))
         else
             ret = ret .. t.text
