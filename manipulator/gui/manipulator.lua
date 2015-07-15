@@ -244,8 +244,8 @@ function manipulator:onRenderBody(p)
     p:newline()
     p:key('CUSTOM_X'):key('CUSTOM_SHIFT_X'):string(': Select ')
     p:key('CUSTOM_A'):key('CUSTOM_SHIFT_A'):string(': all/none, ')
-    p:key('CUSTOM_B'):string(': Batch ')
-    p:key('CUSTOM_E'):string(': Edit, ')
+    p:key('CUSTOM_E'):string(': Edit ')
+    p:key('CUSTOM_SHIFT_E'):string(': unit, ')
     p:key('CUSTOM_D'):string(': Diff '):string(self.diff_enabled and '(Y)' or '(N)',
         self.diff_enabled and COLOR_GREEN or COLOR_RED)
     p:newline()
@@ -435,14 +435,17 @@ function manipulator:onInput(keys)
             self:_select_unit(u, keys.CUSTOM_A)
         end
         self.selection_state = nil
-    elseif keys.CUSTOM_E then
+    elseif keys.CUSTOM_SHIFT_E then
         mgui.batch_ops({parent = self, units = {cur_unit}}):show()
-    elseif keys.CUSTOM_B then
+    elseif keys.CUSTOM_E then
         local units = {}
         for _, u in pairs(self.units) do
             if u.selected then
                 table.insert(units, u)
             end
+        end
+        if #units == 0 then
+            table.insert(units, cur_unit)
         end
         mgui.batch_ops({parent = self, units = units}):show()
     elseif keys.CUSTOM_D then
