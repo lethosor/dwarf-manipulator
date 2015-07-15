@@ -296,7 +296,7 @@ function Column:init(args)
     self.color_cache = {}
     self.disable_cache = if_nil(field('disable_cache'), false)
     self.disable_color_cache = if_nil(field('disable_color_cache'), false)
-    self.width = #self.title
+    self.width = #self.header
     self.on_click = if_nil(field('on_click'), function() end)
     self.cmp_units = field('compare_units')
     self.cmp_values = field('compare_values')
