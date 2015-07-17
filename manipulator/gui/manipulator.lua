@@ -437,7 +437,7 @@ function manipulator:onInput(keys)
         self.selection_state = nil
     elseif keys.CUSTOM_SHIFT_E then
         mgui.batch_ops({parent = self, units = {cur_unit}}):show()
-    elseif keys.CUSTOM_E then
+    elseif keys.CUSTOM_E or keys.CUSTOM_B then
         local units = {}
         for _, u in pairs(self.units) do
             if u.selected then
