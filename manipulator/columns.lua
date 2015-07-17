@@ -271,26 +271,29 @@ Column{
     spec = 'i',
     callback = function(unit) return unit.list_ids.all end,
     color = COLOR_GREY,
+    disable_cache = true,
 }
 
 Column{
     id = 'prof_id',
     title = 'List position - profession',
     desc = 'Position in list, among dwarves with same profession',
-    header = 'Prof Pos',
+    header = 'PPos',
     spec = 'pi',
     callback = function(unit) return unit.list_ids.profession end,
     color = COLOR_GREY,
+    disable_cache = true,
 }
 
 Column{
     id = 'group_id',
     title = 'List position - group',
     desc = 'Position in list, among dwarves in same profession group',
-    header = 'Grp Pos',
+    header = 'GPos',
     spec = 'gi',
     callback = function(unit) return unit.list_ids.group end,
     color = COLOR_GREY,
+    disable_cache = true,
 }
 
 Column{
