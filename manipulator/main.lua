@@ -163,5 +163,7 @@ function main()
         dfhack.printerr('Invalid context')
     end
 end
+main = fwrap.no_gc(main)
+
 p_end('parse')
 p_call('main', main)

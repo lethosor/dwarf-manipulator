@@ -598,3 +598,36 @@ function StringFormatter:format(object, format)
     end
     return ret
 end
+
+fwrap = fwrap or {}
+function fwrap.wrapper(before, after)
+    if not before then before = function() end end
+    if not after then after = function() end end
+    return function(func)
+        return function(...)
+            before(...)
+            local result = {dfhack.pcall(func, ...)}
+            after(...)
+            local ok = table.remove(result, 1)
+            if not ok then
+                error(result[1])
+            else
+                return table.unpack(result)
+            end
+        end
+    end
+end
+
+local no_gc_count = 0
+fwrap.no_gc = fwrap.wrapper(
+    function()
+        no_gc_count = no_gc_count + 1
+        collectgarbage('stop')
+    end,
+    function()
+        no_gc_count = math.max(0, no_gc_count - 1)
+        if no_gc_count == 0 then
+            collectgarbage('restart')
+        end
+    end
+)

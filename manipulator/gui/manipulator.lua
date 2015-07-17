@@ -345,6 +345,7 @@ function manipulator:draw_grid()
     end
     p_end('draw_grid')
 end
+manipulator.draw_grid = fwrap.no_gc(manipulator.draw_grid)
 
 function manipulator:draw_unit_row(unit)
     for x = 1, #SKILL_COLUMNS do
@@ -533,6 +534,7 @@ function manipulator:update_labor_changes()
     end
     p_end('update_labor_changes')
 end
+manipulator.update_labor_changes = fwrap.no_gc(manipulator.update_labor_changes)
 
 function manipulator:set_labor(x, y, state)
     if not self:can_set_labors() then return end
