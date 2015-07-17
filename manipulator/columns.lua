@@ -82,7 +82,7 @@ Column{
     end,
     color = function(unit)
         if not unit.allow_edit then
-            return COLOR_RED
+            return unit.selected and COLOR_YELLOW or COLOR_RED
         elseif unit.selected then
             return COLOR_LIGHTGREEN
         else

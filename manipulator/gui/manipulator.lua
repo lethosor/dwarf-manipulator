@@ -623,7 +623,7 @@ function manipulator:_unit_index(unit)
 end
 
 function manipulator:_select_unit(u, state)
-    if state ~= u.selected and u.allow_edit then
+    if state ~= u.selected then
         u.selected = state
         u.dirty = true
     end
