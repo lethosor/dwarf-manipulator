@@ -445,70 +445,6 @@ function unit_wrapper(u)
     return t
 end
 
-labors = labors or {}
-local function update_labor_column_cache()
-    if SKILL_COLUMNS and not labors.column_cache then
-        labors.column_cache = {}
-        for i, col in pairs(SKILL_COLUMNS) do
-            labors.column_cache[col.labor] = {col = col, index = i}
-        end
-    end
-end
-
-function labors.get_column(labor)
-    update_labor_column_cache()
-    return labors.column_cache[labor].col
-end
-
-function labors.get_column_index(labor)
-    update_labor_column_cache()
-    return labors.column_cache[labor].index
-end
-
-function labors.valid(unit, labor)
-    if labor == df.unit_labor.NONE then return false end
-    local ent = df.global.ui.main.fortress_entity
-    if ent and ent.entity_raw and not ent.entity_raw.jobs.permitted_labor[labor] then
-        return false
-    end
-    return true
-end
-
-function labors.get(unit, labor)
-    return unit.status.labors[labor]
-end
-
-function labors.get_orig(unit, labor)
-    return unit.orig_labors[labor]
-end
-
-function labors.set(unit, labor, state, callback)
-    -- calls callback(unit, labor, state) after setting labor(s)
-    if not unit.allow_edit then return end
-    if not labors.valid(unit, labor) then return end
-    local col = labors.get_column(labor) or error(('Unrecognized labor: %s'):format(labor))
-    if col.special then
-        if state then
-            for i, c in pairs(SKILL_COLUMNS) do
-                if c.special and c.labor ~= labor then
-                    labors.set(unit, c.labor, false, callback)
-                end
-            end
-        end
-        unit.military.pickup_flags.update = true
-    end
-    if unit.status.labors[labor] ~= state then
-        unit.status.labors[labor] = state
-        if callback then
-            callback(unit, labor, state)
-        end
-    end
-end
-
-function labors.special(labor)
-    return labors.get_column(labor).special
-end
-
 StringFormatter = defclass(StringFormatter)
 function StringFormatter:init()
     self.options = {}
@@ -597,6 +533,70 @@ function StringFormatter:format(object, format)
         end
     end
     return ret
+end
+
+labors = labors or {}
+local function update_labor_column_cache()
+    if SKILL_COLUMNS and not labors.column_cache then
+        labors.column_cache = {}
+        for i, col in pairs(SKILL_COLUMNS) do
+            labors.column_cache[col.labor] = {col = col, index = i}
+        end
+    end
+end
+
+function labors.get_column(labor)
+    update_labor_column_cache()
+    return labors.column_cache[labor].col
+end
+
+function labors.get_column_index(labor)
+    update_labor_column_cache()
+    return labors.column_cache[labor].index
+end
+
+function labors.valid(unit, labor)
+    if labor == df.unit_labor.NONE then return false end
+    local ent = df.global.ui.main.fortress_entity
+    if ent and ent.entity_raw and not ent.entity_raw.jobs.permitted_labor[labor] then
+        return false
+    end
+    return true
+end
+
+function labors.get(unit, labor)
+    return unit.status.labors[labor]
+end
+
+function labors.get_orig(unit, labor)
+    return unit.orig_labors[labor]
+end
+
+function labors.set(unit, labor, state, callback)
+    -- calls callback(unit, labor, state) after setting labor(s)
+    if not unit.allow_edit then return end
+    if not labors.valid(unit, labor) then return end
+    local col = labors.get_column(labor) or error(('Unrecognized labor: %s'):format(labor))
+    if col.special then
+        if state then
+            for i, c in pairs(SKILL_COLUMNS) do
+                if c.special and c.labor ~= labor then
+                    labors.set(unit, c.labor, false, callback)
+                end
+            end
+        end
+        unit.military.pickup_flags.update = true
+    end
+    if unit.status.labors[labor] ~= state then
+        unit.status.labors[labor] = state
+        if callback then
+            callback(unit, labor, state)
+        end
+    end
+end
+
+function labors.special(labor)
+    return labors.get_column(labor).special
 end
 
 fwrap = fwrap or {}
