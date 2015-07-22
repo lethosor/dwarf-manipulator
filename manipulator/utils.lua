@@ -535,6 +535,44 @@ function StringFormatter:format(object, format)
     return ret
 end
 
+function enum(values, cur)
+    values = utils.invert(values)
+    if cur and not values[cur] then
+        error('invalid initial enum value: ' .. tostring(cur))
+    end
+    local t = {}
+    local function eq(self, v)
+        if cur == nil then
+            error('enum value not set')
+        end
+        if not values[v] then
+            error('invalid enum value: ' .. tostring(v))
+        end
+        return cur == v
+    end
+    local function set(self, v)
+        if values[v] then
+            cur = v
+        else
+            error('invalid enum value: ' .. tostring(v))
+        end
+    end
+    setmetatable(t, {
+        __index = eq,
+        __call = set,
+        __newindex = set,
+        __tostring = function() return tostring(cur) end,
+        __pairs = function()
+            local k, v
+            return function()
+                k, v = next(values, k)
+                if v ~= nil then return k, cur == k end
+            end
+        end,
+    })
+    return t
+end
+
 labors = labors or {}
 local function update_labor_column_cache()
     if SKILL_COLUMNS and not labors.column_cache then
