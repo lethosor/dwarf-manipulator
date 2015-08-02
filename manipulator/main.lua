@@ -20,12 +20,16 @@ PROFILE = PROFILE or false
 
 if PROFILE then
     p_data = {}
+    p_depth = 0
     function p_start(name)
         p_data[name] = os.clock()
+        p_depth = p_depth + 1
     end
     function p_end(name)
+        local t = os.clock()
         if p_data[name] then
-            print(('%.5f secs [%s]'):format(os.clock() - p_data[name], name))
+            p_depth = p_depth - 1
+            print(('%s%.5f secs [%s]'):format(('  '):rep(p_depth), t - p_data[name], name))
         end
     end
     function p_call(name, func, ...)
