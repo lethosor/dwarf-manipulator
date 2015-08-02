@@ -36,6 +36,22 @@ function irange(a, b)
     end
 end
 
+function strict_open(path, mode, on_fail)
+    local function fail(msg)
+        (on_fail or error)(('Could not open %s: %s'):format(path, msg))
+    end
+    if not mode then fail('No mode specified') end
+    local f, err, code = io.open(path, mode)
+    if not f then
+        fail(tostring(code) .. ': ' .. tostring(err))
+    end
+    return f
+end
+
+function strip_whitespace(str)
+    return str:gsub('^%s+', ''):gsub('%s+$', '')
+end
+
 function join_pairs(...)
     -- Returns a generator with all key/value pairs from multiple tables
     -- DFHack-generated userdata does not support next(), so it is necessary to
