@@ -34,6 +34,10 @@ function manipulator:init(args)
     self.grid_rows = {}
     self.diff_enabled = if_nil(storage.diff_enabled, true)
     self.labor_changes = {added = 0, removed = 0}
+    self.menu_page = enum({
+        'main',
+        'display',
+    }, 'main')
     p_start('init units')
     for idx, u in pairs(self.units) do
         self.grid_rows[u] = penarray.new(#SKILL_COLUMNS, 1)
@@ -235,21 +239,26 @@ function manipulator:onRenderBody(p)
         end
     end
     p:newline()
-    p:key('SELECT'):string(': Toggle labor ')
-    p:key('SELECT_ALL'):string(': Toggle group ')
-    p:key('UNITJOB_VIEW'):string(': View Unit ')
-    p:key('UNITJOB_ZOOM_CRE'):string(': Go to Unit')
-    p:newline()
-    p:key('SECONDSCROLL_UP'):key('SECONDSCROLL_DOWN'):string(': Sort by skill')
-    p:newline()
-    p:key('CUSTOM_X'):key('CUSTOM_SHIFT_X'):string(': Select ')
-    p:key('CUSTOM_A'):key('CUSTOM_SHIFT_A'):string(': all/none, ')
-    p:key('CUSTOM_E'):string(': Edit ')
-    p:key('CUSTOM_SHIFT_E'):string(': unit, ')
-    p:key('CUSTOM_D'):string(': Diff '):string(self.diff_enabled and '(Y)' or '(N)',
-        self.diff_enabled and COLOR_GREEN or COLOR_RED)
-    p:newline()
-    p:key('CUSTOM_SHIFT_C'):string(': Columns ')
+    if self.menu_page.display then
+        p:key('CUSTOM_D'):string(': Diff '):string(self.diff_enabled and '(Y)' or '(N)',
+            self.diff_enabled and COLOR_GREEN or COLOR_RED):string(' ')
+        p:key('CUSTOM_R'):string(': Refresh')
+        p:newline()
+        p:key('LEAVESCREEN'):string(': Back')
+    else
+        p:key('UNITJOB_VIEW'):string(': View ')
+        p:key('UNITJOB_ZOOM_CRE'):string(': Zoom ')
+        p:key('SECONDSCROLL_UP'):key('SECONDSCROLL_DOWN'):string(': Sort by skill ')
+        p:key('CUSTOM_X'):key('CUSTOM_SHIFT_X'):string(': Select ')
+        p:key('CUSTOM_A'):key('CUSTOM_SHIFT_A'):string(': all/none ')
+        p:newline()
+        p:key('CUSTOM_E'):string(': Edit ')
+        p:key('CUSTOM_SHIFT_E'):string(': Edit unit ')
+        p:newline()
+        p:key('CUSTOM_SHIFT_C'):string(': Columns ')
+        p:newline()
+        p:key('CUSTOM_D'):string(': Display')
+    end
     self.bounds.grid = {grid_start_x, self.list_top_margin + 1, gps.dimx - 2, self.list_top_margin + self.list_height}
     self.bounds.grid_header = {self.bounds.grid[1], 1, self.bounds.grid[3], 2}
     self.bounds.all_columns = {self.left_margin, self.list_top_margin + 1,
@@ -374,6 +383,19 @@ function manipulator:onInput(keys)
     local old_y = cur_y
     local old_unit = cur_unit
     process_keys(keys)
+    if self.menu_page.display then
+        local processed = true
+        if keys.CUSTOM_D then
+            self.diff_enabled = not self.diff_enabled
+            self:draw_grid()
+        elseif keys.CUSTOM_R then
+            self:draw_grid()
+        elseif not keys.LEAVESCREEN then
+            processed = false
+        end
+        self.menu_page.main = true
+        if processed then return end
+    end
     if keys.LEAVESCREEN then
         self:dismiss()
         return
@@ -450,8 +472,7 @@ function manipulator:onInput(keys)
         end
         mgui.batch_ops({parent = self, units = units}):show()
     elseif keys.CUSTOM_D then
-        self.diff_enabled = not self.diff_enabled
-        self:draw_grid()
+        self.menu_page.display = true
     elseif keys._MOUSE_L or keys._MOUSE_R then
         self:onMouseInput(gps.mouse_x, gps.mouse_y,
             {left = keys._MOUSE_L, right = keys._MOUSE_R}, dfhack.internal.getModifiers())
