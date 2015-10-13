@@ -329,10 +329,14 @@ function Column:populate(units)
 end
 
 function Column:compare(u1, u2)
+    local ret = nil
     if self.cmp_units then
-        return self.cmp_units(u1, u2)
+        ret = self.cmp_units(u1, u2)
     elseif self.cmp_values then
-        return self.cmp_values(self:lookup(u1), self:lookup(u2))
+        ret = self.cmp_values(self:lookup(u1), self:lookup(u2))
+    end
+    if ret ~= nil then
+        return ret
     else
         return basic_compare(self:lookup(u1), self:lookup(u2))
     end

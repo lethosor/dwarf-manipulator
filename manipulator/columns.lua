@@ -31,7 +31,8 @@ Valid parameters to Column{}:
     should be considered equal, anything less than 0 if the first should be
     considered smaller, and anything greater than 0 if the first should be
     considered larger.
-    If omitted, the standard comparison operators (< and >) are used.
+    If these functions are omitted or return nil, the standard comparison
+    operators (< and >) are used.
 ]]
 
 if not Column then
@@ -228,6 +229,13 @@ Column{
     spec = 's',
     callback = wrap(dfhack.units.getSquadName),
     color = COLOR_LIGHTCYAN,
+    compare_values = function(a, b)
+        if a ~= '' and b == '' then
+            return -1
+        elseif b ~= '' and a == '' then
+            return 1
+        end
+    end,
 }
 
 Column{
@@ -240,6 +248,13 @@ Column{
     end,
     color = function(unit)
         return unit.job.current_job and COLOR_LIGHTCYAN or COLOR_YELLOW
+    end,
+    compare_units = function(a, b)
+        if a.job.current_job and not b.job.current_job then
+            return -1
+        elseif b.job.current_job and not a.job.current_job then
+            return 1
+        end
     end,
 }
 
