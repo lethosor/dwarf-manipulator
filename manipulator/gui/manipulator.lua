@@ -390,6 +390,10 @@ function manipulator:onInput(keys)
             self:draw_grid()
         elseif keys.CUSTOM_R then
             self:draw_grid()
+            for _, col in pairs(self.all_columns) do
+                col:clear_cache()
+                col:populate(self.units)
+            end
         elseif not keys.LEAVESCREEN then
             processed = false
         end
