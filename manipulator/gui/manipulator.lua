@@ -397,8 +397,10 @@ function manipulator:onInput(keys)
         elseif not keys.LEAVESCREEN then
             processed = false
         end
-        self.menu_page.main = true
-        if processed then return end
+        if processed then
+            self.menu_page.main = true
+        end
+        return
     end
     if keys.LEAVESCREEN then
         self:dismiss()
