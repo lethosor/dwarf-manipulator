@@ -292,8 +292,8 @@ function Column:init(args)
         return args[name] or base[name]
     end
     self.id = check_nil(args.id, 'No column ID given', true)
-    self.callback = check_nil(field('callback'), 'No callback given', true)
-    self.color = check_nil(field('color'), 'No color or color callback given', true)
+    self.callback = check_nil(field('callback'), 'Column ' .. self.id .. ': No callback given', true)
+    self.color = check_nil(field('color'), 'Column ' .. self.id .. ': No color or color callback given', true)
     if type(self.color) ~= 'function' then
         local _c = self.color
         self.color = function() return _c end
