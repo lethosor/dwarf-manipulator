@@ -419,7 +419,6 @@ function manipulator:onInput(keys)
             * ((keys.CURSOR_UP_FAST or keys.CURSOR_DOWN_FAST) and 10 or 1),
             1, self.unit_max
         )
-        self:update_viewport()
     end
     if keys.CURSOR_LEFT or keys.CURSOR_RIGHT or keys.CURSOR_LEFT_FAST or keys.CURSOR_RIGHT_FAST then
         self.grid_idx = scroll_index(self.grid_idx,
@@ -427,7 +426,12 @@ function manipulator:onInput(keys)
             * ((keys.CURSOR_LEFT_FAST or keys.CURSOR_RIGHT_FAST) and 10 or 1),
             1, #SKILL_COLUMNS, {wrap = false}
         )
-        self:update_viewport()
+    end
+    if keys.CUSTOM_CTRL_A then
+        self.grid_idx = 1
+    end
+    if keys.CUSTOM_CTRL_E then
+        self.grid_idx = #SKILL_COLUMNS
     end
     if keys.CURSOR_DOWN_Z then
         self:update_grid_tile()
@@ -436,7 +440,6 @@ function manipulator:onInput(keys)
             if SKILL_COLUMNS[i].group == newgroup then
                 self.grid_idx = i
                 self:update_grid_tile()
-                self:update_viewport()
                 break
             end
         end
@@ -447,7 +450,6 @@ function manipulator:onInput(keys)
             self.grid_idx = self.grid_idx - 1
         end
         self:update_grid_tile()
-        self:update_viewport()
     end
     if keys.SELECT then
         self:toggle_labor(self.grid_idx, self.list_idx)
@@ -490,6 +492,7 @@ function manipulator:onInput(keys)
         self:onMouseInput(gps.mouse_x, gps.mouse_y,
             {left = keys._MOUSE_L, right = keys._MOUSE_R}, dfhack.internal.getModifiers())
     end
+    self:update_viewport()
     self:update_grid_tile(old_x, old_y)
     self:update_grid_tile()
 end
