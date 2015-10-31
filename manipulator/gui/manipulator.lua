@@ -224,18 +224,21 @@ function manipulator:onRenderBody(p)
         p:string(', ')
     end
     p:string(dfhack.units.getProfessionName(unit._native)):string(': ')
+    local caption_pen = {
+        fg = labors.valid(unit, col.labor) and COLOR_LIGHTBLUE or COLOR_RED
+    }
     if col.skill == df.job_skill.NONE then
         if col.labor ~= df.unit_labor.NONE then
-            p:string(df.unit_labor.attrs[col.labor].caption, {fg = COLOR_LIGHTBLUE}):string(' ')
+            p:string(df.unit_labor.attrs[col.labor].caption, caption_pen):string(' ')
         end
-        p:string(unit.status.labors[col.labor] and 'Enabled' or 'Not Enabled', {fg = COLOR_LIGHTBLUE})
+        p:string(unit.status.labors[col.labor] and 'Enabled' or 'Not Enabled', caption_pen)
     else
         local lvl = skills.rating(unit, col.skill)
         local prof = df.job_skill.attrs[col.skill].caption_noun
-        p:string((lvl > 0 and SKILL_LEVELS[lvl].name or 'Not') .. ' ' .. prof, {fg = COLOR_LIGHTBLUE})
+        p:string((lvl > 0 and SKILL_LEVELS[lvl].name or 'Not') .. ' ' .. prof, caption_pen)
         if lvl < #SKILL_LEVELS then
             p:string(' '):string(('(%i/%i)'):format(skills.experience(unit, col.skill),
-                SKILL_LEVELS[lvl > 0 and lvl or 1].points), {fg = COLOR_LIGHTBLUE})
+                SKILL_LEVELS[lvl > 0 and lvl or 1].points), caption_pen)
         end
     end
     p:newline()
@@ -331,6 +334,9 @@ function manipulator:update_grid_tile(x, y)
     end
     if x == self.grid_idx and y == self.list_idx then
         fg = COLOR_LIGHTBLUE
+    end
+    if not labors.valid(unit, labor) then
+        fg = COLOR_RED
     end
     self.grid_rows[unit]:set_tile(x - 1, 0, {fg = fg, bg = bg, ch = c})
 end
