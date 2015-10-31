@@ -225,7 +225,8 @@ function manipulator:onRenderBody(p)
     end
     p:string(dfhack.units.getProfessionName(unit._native)):string(': ')
     local caption_pen = {
-        fg = labors.valid(unit, col.labor) and COLOR_LIGHTBLUE or COLOR_RED
+        fg = (col.labor ~= df.unit_labor.NONE and not labors.valid(unit, col.labor))
+            and COLOR_RED or COLOR_LIGHTBLUE
     }
     if col.skill == df.job_skill.NONE then
         if col.labor ~= df.unit_labor.NONE then
@@ -332,11 +333,11 @@ function manipulator:update_grid_tile(x, y)
     if df.profession.attrs[unit.profession].military then
         fg = COLOR_MAGENTA
     end
+    if labor ~= df.unit_labor.NONE and not labors.valid(unit, labor) then
+        fg = COLOR_RED
+    end
     if x == self.grid_idx and y == self.list_idx then
         fg = COLOR_LIGHTBLUE
-    end
-    if not labors.valid(unit, labor) then
-        fg = COLOR_RED
     end
     self.grid_rows[unit]:set_tile(x - 1, 0, {fg = fg, bg = bg, ch = c})
 end
