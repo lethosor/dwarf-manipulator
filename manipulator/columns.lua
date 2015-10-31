@@ -133,6 +133,21 @@ Column{
 }
 
 Column{
+    id = 'civ',
+    title = 'Civilization',
+    desc = 'Civilization name',
+    spec = 'c',
+    callback = function(unit)
+        local ent = df.historical_entity.find(unit.civ_id)
+        if ent then
+            return dfhack.TranslateName(ent.name)
+        end
+        return ''
+    end,
+    color = COLOR_GREY,
+}
+
+Column{
     id = 'profession',
     title = 'Profession',
     desc = 'Displayed profession',
