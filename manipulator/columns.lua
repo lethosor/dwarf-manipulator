@@ -31,8 +31,8 @@ Valid parameters to Column{}:
     should be considered equal, anything less than 0 if the first should be
     considered smaller, and anything greater than 0 if the first should be
     considered larger.
-    If these functions are omitted or return nil, the standard comparison
-    operators (< and >) are used.
+    If these functions are omitted or return nil, basic_compare() is used, which
+    uses the standard comparison operators (< and >).
 ]]
 
 if not Column then
@@ -318,4 +318,26 @@ Column{
     spec = 'ri',
     callback = function(unit) return unit.id end,
     color = COLOR_GREY,
+}
+
+Column{
+    id = 'beds',
+    title = 'Beds',
+    desc = 'Number of bedrooms',
+    spec = 'rb',
+    callback = function(unit)
+        local count = 0
+        for _, b in pairs(unit.owned_buildings) do
+            if df.building_bedst:is_instance(b) then
+                count = count + 1
+            end
+        end
+        return count
+    end,
+    color = function(unit, count)
+        return tonumber(count) == 0 and COLOR_RED or COLOR_LIGHTGREEN
+    end,
+    compare_values = function(a, b)
+        return -basic_compare(tonumber(a), tonumber(b))
+    end,
 }
