@@ -615,7 +615,7 @@ end
 
 function labors.valid(unit, labor)
     if labor == df.unit_labor.NONE then return false end
-    local ent = df.global.ui.main.fortress_entity
+    local ent = df.historical_entity.find(unit.civ_id)
     if ent and ent.entity_raw and not ent.entity_raw.jobs.permitted_labor[labor] then
         return false
     end
