@@ -294,6 +294,14 @@ Column{
 }
 
 Column{
+    id = 'speed',
+    title = 'Speed',
+    spec = 'sp',
+    callback = wrap(dfhack.units.computeMovementSpeed),
+    color = COLOR_GREY,
+}
+
+Column{
     id = 'list_id',
     title = 'List position',
     desc = 'Position in list',
