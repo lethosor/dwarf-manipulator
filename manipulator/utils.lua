@@ -689,3 +689,32 @@ fwrap.no_gc = fwrap.wrapper(
         end
     end
 )
+
+function KeyBindingMap()
+    local t = {}
+    local m = {}
+    function m.__call(self, k, ...)
+        if #{...} < 1 then
+            return m.__index(self, k)
+        end
+        for _, v in pairs({...}) do
+            if df.interface_key[v] then
+                rawset(t, k, df.interface_key[v])
+                return
+            end
+        end
+        error('No valid keys for binding: ' .. k)
+    end
+    function m.__index(self, k)
+        return rawget(t, k) or error('Binding not set: ' .. k)
+    end
+    function m.__newindex(self, k, v)
+        if type(v) == 'table' then
+            m.__call(self, k, table.unpack(v))
+        else
+            m.__call(self, k, v)
+        end
+    end
+    setmetatable(t, m)
+    return t
+end

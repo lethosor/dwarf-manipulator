@@ -13,6 +13,11 @@ manipulator.ATTRS = {
     list_bottom_margin = 7,
 }
 
+keys = KeyBindingMap()
+keys.view_unit = {'UNITJOB_VIEW', 'UNITJOB_VIEW_UNIT'}
+keys.zoom_unit = 'UNITJOB_ZOOM_CRE'
+
+
 function manipulator:init(args)
     p_start('init')
     self.units = {}
@@ -250,8 +255,8 @@ function manipulator:onRenderBody(p)
         p:newline()
         p:key('LEAVESCREEN'):string(': Back')
     else
-        p:key('UNITJOB_VIEW'):string(': View ')
-        p:key('UNITJOB_ZOOM_CRE'):string(': Zoom ')
+        p:key(keys.view_unit):string(': View ')
+        p:key(keys.zoom_unit):string(': Zoom ')
         p:key('SECONDSCROLL_UP'):key('SECONDSCROLL_DOWN'):string(': Sort by skill ')
         p:key('CUSTOM_X'):key('CUSTOM_SHIFT_X'):string(': Select ')
         p:key('CUSTOM_A'):key('CUSTOM_SHIFT_A'):string(': all/none ')
@@ -641,14 +646,14 @@ function manipulator:view_unit(u)
     local parent = self._native.parent
     if self:parent_select_unit(u) then
         u.dirty = true
-        gui.simulateInput(parent, {UNITJOB_VIEW = true})
+        gui.simulateInput(parent, {[keys.view_unit] = true})
     end
 end
 
 function manipulator:zoom_unit(u)
     local parent = self._native.parent
     if self:parent_select_unit(u) then
-        gui.simulateInput(parent, {UNITJOB_ZOOM_CRE = true})
+        gui.simulateInput(parent, {[keys.zoom_unit] = true})
         self:dismiss()
     end
 end
