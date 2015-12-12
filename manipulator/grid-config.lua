@@ -70,6 +70,8 @@ SKILL_COLUMNS = {
     {group = 9, color = 9, profession = 'POTTER', labor = 'POTTERY', skill = 'POTTERY', label = "Po"},
     {group = 9, color = 9, profession = 'GLAZER', labor = 'GLAZING', skill = 'GLAZING', label = "Gl"},
     {group = 9, color = 9, profession = 'WAX_WORKER', labor = 'WAX_WORKING', skill = 'WAX_WORKING', label = "Wx"},
+    {group = 9, color = 9, profession = 'PAPERMAKER', labor = 'PAPERMAKING', skill = 'PAPERMAKING', label = "Pa"},
+    {group = 9, color = 9, profession = 'BOOKBINDER', labor = 'BOOKBINDING', skill = 'BOOKBINDING', label = "Bk"},
 -- Engineering
     {group = 10, color = 12, profession = 'SIEGE_ENGINEER', labor = 'SIEGECRAFT', skill = 'SIEGECRAFT', label = "En"},
     {group = 10, color = 12, profession = 'SIEGE_OPERATOR', labor = 'SIEGEOPERATE', skill = 'SIEGEOPERATE', label = "Op"},
