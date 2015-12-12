@@ -13,10 +13,9 @@ manipulator.ATTRS = {
     list_bottom_margin = 7,
 }
 
-keys = KeyBindingMap()
+local keys = KeyBindingMap()
 keys.view_unit = {'UNITJOB_VIEW', 'UNITJOB_VIEW_UNIT'}
 keys.zoom_unit = 'UNITJOB_ZOOM_CRE'
-
 
 function manipulator:init(args)
     p_start('init')
