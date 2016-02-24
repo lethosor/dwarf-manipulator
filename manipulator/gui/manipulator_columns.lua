@@ -52,8 +52,8 @@ function manipulator_columns:onRenderBody(p)
     local a_color = self.cur_list == 2 and COLOR_WHITE or COLOR_DARKGREY
     OutputKeyString(c_color, x1, y2 + 1, 'CURSOR_UP_FAST', 'Move up')
     OutputKeyString(c_color, x1, y2 + 2, 'CURSOR_DOWN_FAST', 'Move down')
-    OutputKeyString(c_color, x1, y2 + 3, 'CUSTOM_R', 'Remove')
-    OutputKeyString(a_color, x2 + 1, y2 + 1, 'CUSTOM_A', 'Add')
+    OutputKeyString(c_color, x1, y2 + 3, 'STRING_A000', 'Remove')
+    OutputKeyString(a_color, x2 + 1, y2 + 1, 'SELECT', 'Add')
     if col then
         OutputString(COLOR_GREY, x1, y2 + 4, col.desc)
     end
@@ -76,10 +76,10 @@ function manipulator_columns:handle_drag()
         self.drag_text = col_list[col_idx].title
         if in_bounds(x, y, self.bounds.col1) then
             self.drag_column = table.remove(self.columns, col_idx)
-            self.drag_dx = x - self.bounds.x1 - 1
+            self.drag_dx = x - self.bounds.col1[1]
         elseif self.drag_add then
             self.drag_column = self.all_columns[col_idx]
-            self.drag_dx = x - self.bounds.x2 - 1
+            self.drag_dx = x - self.bounds.col2[1]
         end
         self.col_idx_old = self.col_idx
         self.col_idx = 0
@@ -145,7 +145,7 @@ function manipulator_columns:onInput(keys)
             self.columns[self.col_idx + 1] = self.columns[self.col_idx]
             self.columns[self.col_idx] = tmp
             self.col_idx = self.col_idx + 1
-        elseif keys.CUSTOM_R then
+        elseif keys.CUSTOM_R or keys.STRING_A000 then
             table.remove(self.columns, self.col_idx)
             self.col_idx = math.min(self.col_idx, #self.columns)
         end
