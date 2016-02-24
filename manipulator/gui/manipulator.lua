@@ -50,8 +50,9 @@ function manipulator:init(args)
         end
         u.list_ids = {all = 0, profession = 0, group = 0}
         u.allow_edit = true
-        if not dfhack.units.isOwnRace(u._native) or not dfhack.units.isOwnCiv(u._native) or
-                u.flags1.dead or not df.profession.attrs[u.profession].can_assign_labor then
+        if not dfhack.units.isOwnCiv(u._native) or not dfhack.units.isOwnGroup(u._native) or
+                u.flags1.dead or u.flags2.visitor or u.flags3.ghostly or
+                not df.profession.attrs[u.profession].can_assign_labor then
             u.allow_edit = false
         end
         u.legendary = false
