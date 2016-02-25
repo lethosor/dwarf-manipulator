@@ -34,23 +34,29 @@ if PROFILE then
     end
     function p_call(name, func, ...)
         p_start(name)
-        func(...)
+        local ret = {func(...)}
         p_end(name)
+        return table.unpack(ret)
     end
 else
     function p_start() end
     function p_end() end
-    function p_call(name, func, ...) func(...) end
+    function p_call(name, func, ...) return func(...) end
 end
 p_start('parse')
 
 m_module = m_module or {cache = {}, default_env = {}}
-function m_module.load(name, opts)
-    if not opts then opts = {} end
+
+function m_module.clean_name(name)
     if name:sub(-4) == '.lua' then
         name = name:sub(1, -5)
     end
-    name = 'manipulator/' .. name
+    return 'manipulator/' .. name
+end
+
+function m_module.load(name, opts)
+    if not opts then opts = {} end
+    name = m_module.clean_name(name)
     p_start('load ' .. name)
     local path = dfhack.findScript(name)
     if not path and not opts.optional then
@@ -114,7 +120,6 @@ function m_module.autoloader(module_pattern, name_pattern)
     return stub
 end
 
-m_module.load('grid-config', {env = _ENV})
 m_module.load('utils', {env = _ENV})
 mgui = m_module.autoloader('gui/%s')
 
@@ -123,25 +128,56 @@ if not penarray or iargs['--lua-penarray'] then
     penarray = m_module.load('penarray').penarray
 end
 
-p_start('validate grid')
-for id, col in pairs(SKILL_COLUMNS) do
-    check_nil(tonumber(col.group), ('Column %i: Invalid group ID: %s'):format(id, col.group))
-    check_nil(tonumber(col.color), ('Column %i: Invalid color ID: %s'):format(id, col.color))
-    col.profession = check_nil(df.profession[col.profession], ('Column %i: Unrecognized profession: %s'):format(id, col.profession))
-    col.labor = check_nil(df.unit_labor[col.labor], ('Column %i: Unrecognized labor: %s'):format(id, col.labor))
-    col.skill = check_nil(df.job_skill[col.skill], ('Column %i: Unrecognized skill: %s'):format(id, col.skill))
-    if col.label == nil or type(col.label) ~= 'string' or #tostring(col.label) ~= 2 then
-        qerror(('Column %i: Invalid label: %s'):format(id, col.label))
+grid_cache = grid_cache or {}
+function load_grid()
+    local cache = m_module.cache[m_module.clean_name('grid-config')]
+    if cache and dfhack.filesystem.mtime(cache.path) == cache.mtime and grid_cache.columns and grid_cache.levels then
+        return grid_cache.columns, grid_cache.levels
     end
-    if col.special == nil then col.special = false end
-end
+    local columns = {}
+    local levels = {}
 
-for id, lvl in pairs(SKILL_LEVELS) do
-    check_nil(lvl.name, ('Skill level %i: Missing name'):format(id))
-    check_nil(tonumber(lvl.points), ('Skill level %i: Invalid points: %s'):format(id, lvl.points))
-    lvl.abbr = tostring(check_nil(lvl.abbr, ('Skill level %i: Missing abbreviation'):format(id))):sub(0, 1)
+    local function check_enum(enum, value, name, location)
+        local ret = enum[value]
+        if not ret then
+            dfhack.printerr(('%s: skipping unrecognized %s: %s'):format(location, name, value))
+        end
+        return ret
+    end
+
+    local function add_column(col)
+        local location = ('%s: line %i'):format(debug.getinfo(2).short_src, debug.getinfo(2).currentline)
+        check_nil(tonumber(col.group), ('%s: Invalid group ID: %s'):format(location, col.group))
+        check_nil(tonumber(col.color), ('%s: Invalid color ID: %s'):format(location, col.color))
+        col.profession = check_enum(df.profession, col.profession, 'profession', location)
+        col.labor = check_enum(df.unit_labor, col.labor, 'labor', location)
+        col.skill = check_enum(df.job_skill, col.skill, 'skill', location)
+        if not col.profession or not col.labor or not col.skill then
+            return
+        end
+        if col.label == nil or type(col.label) ~= 'string' or #tostring(col.label) ~= 2 then
+            qerror(('%s: Invalid label: %s'):format(location, col.label))
+        end
+        if col.special == nil then col.special = false end
+        table.insert(columns, col)
+    end
+
+    local function add_level(lvl)
+        local location = ('grid-config: line %i'):format(debug.getinfo(2).currentline)
+        check_nil(lvl.name, ('%s: Missing name'):format(location))
+        check_nil(tonumber(lvl.points), ('%s: Invalid points: %s'):format(location, lvl.points))
+        lvl.abbr = tostring(check_nil(lvl.abbr, ('%s: Missing abbreviation'):format(location))):sub(0, 1)
+        table.insert(levels, lvl)
+    end
+
+    m_module.load('grid-config', {env = {column = add_column, level = add_level}})
+    grid_cache.columns = columns
+    grid_cache.levels = levels
+    return columns, levels
 end
-p_end('validate grid')
+load_grid = fwrap.no_gc(load_grid)
+
+SKILL_COLUMNS, SKILL_LEVELS = p_call('load grid', load_grid)
 
 function mkscreen(parent, opts)
     opts = opts or {}
