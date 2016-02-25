@@ -248,6 +248,7 @@ function manipulator:onRenderBody(p)
         end
     end
     p:newline()
+    local mods = dfhack.internal.getModifiers()
     if self.menu_page.display then
         p:key('CUSTOM_D'):string(': Diff '):string(self.diff_enabled and '(Y)' or '(N)',
             self.diff_enabled and COLOR_GREEN or COLOR_RED):string(' ')
@@ -260,6 +261,7 @@ function manipulator:onRenderBody(p)
         p:key('SECONDSCROLL_UP'):key('SECONDSCROLL_DOWN'):string(': Sort by skill ')
         p:key('CUSTOM_X'):key('CUSTOM_SHIFT_X'):string(': Select ')
         p:key('CUSTOM_A'):key('CUSTOM_SHIFT_A'):string(': all/none ')
+        p:key('CUSTOM_ALT_A'):string(': workers ')
         p:newline()
         p:key('CUSTOM_E'):string(': Edit ')
         p:key('CUSTOM_SHIFT_E'):string(': Edit unit ')
@@ -473,9 +475,13 @@ function manipulator:onInput(keys)
         self:selection_start(cur_unit)
     elseif keys.CUSTOM_SHIFT_X then
         self:selection_extend(cur_unit)
-    elseif keys.CUSTOM_A or keys.CUSTOM_SHIFT_A then
+    elseif keys.CUSTOM_A or keys.CUSTOM_SHIFT_A or keys.CUSTOM_ALT_A then
         for i, u in pairs(self.units) do
-            self:_select_unit(u, keys.CUSTOM_A)
+            if keys.CUSTOM_ALT_A then
+                self:_select_unit(u, u.allow_edit)
+            else
+                self:_select_unit(u, keys.CUSTOM_A)
+            end
         end
         self.selection_state = nil
     elseif keys.CUSTOM_SHIFT_E then
