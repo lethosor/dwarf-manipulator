@@ -133,6 +133,11 @@ fallback_function('dfhack.units.getKillCount', function(unit)
         for _, v in pairs(histfig.info.kills.killed_count) do
             count = count + v
         end
+        for _, id in pairs(histfig.info.kills.events) do
+            if df.history_event_hist_figure_diedst:is_instance(df.history_event.find(id)) then
+                count = count + 1
+            end
+        end
     end
     return count
 end)
