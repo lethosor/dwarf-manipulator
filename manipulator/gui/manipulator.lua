@@ -13,9 +13,9 @@ manipulator.ATTRS = {
     list_bottom_margin = 7,
 }
 
-local keys = KeyBindingMap()
-keys.view_unit = {'UNITJOB_VIEW', 'UNITJOB_VIEW_UNIT'}
-keys.zoom_unit = 'UNITJOB_ZOOM_CRE'
+local kmap = KeyBindingMap()
+kmap.view_unit = {'UNITJOB_VIEW', 'UNITJOB_VIEW_UNIT'}
+kmap.zoom_unit = 'UNITJOB_ZOOM_CRE'
 
 function manipulator:init(args)
     p_start('init')
@@ -256,8 +256,8 @@ function manipulator:onRenderBody(p)
         p:newline()
         p:key('LEAVESCREEN'):string(': Back')
     else
-        p:key(keys.view_unit):string(': View ')
-        p:key(keys.zoom_unit):string(': Zoom ')
+        p:key(kmap.view_unit):string(': View ')
+        p:key(kmap.zoom_unit):string(': Zoom ')
         p:key('SECONDSCROLL_UP'):key('SECONDSCROLL_DOWN'):string(': Sort by skill ')
         p:key('CUSTOM_X'):key('CUSTOM_SHIFT_X'):string(': Select ')
         p:key('CUSTOM_A'):key('CUSTOM_SHIFT_A'):string(': all/none ')
@@ -396,7 +396,7 @@ function manipulator:onInput(keys)
     local old_x = cur_x
     local old_y = cur_y
     local old_unit = cur_unit
-    process_keys(keys)
+    process_keys(keys, kmap)
     if self.menu_page.display then
         local processed = true
         if keys.CUSTOM_D then
@@ -464,9 +464,9 @@ function manipulator:onInput(keys)
         self:toggle_labor_group(self.grid_idx, self.list_idx)
     elseif keys.CUSTOM_SHIFT_C then
         mgui.manipulator_columns{parent = self}:show()
-    elseif keys.UNITJOB_VIEW then
+    elseif keys.view_unit then
         self:view_unit(self.units[self.list_idx])
-    elseif keys.UNITJOB_ZOOM_CRE then
+    elseif keys.zoom_unit then
         self:zoom_unit(self.units[self.list_idx])
     elseif keys.SECONDSCROLL_UP or keys.SECONDSCROLL_DOWN then
         self:sort_skill(SKILL_COLUMNS[self.grid_idx].skill, keys.SECONDSCROLL_UP)
@@ -652,14 +652,14 @@ function manipulator:view_unit(u)
     local parent = self._native.parent
     if self:parent_select_unit(u) then
         u.dirty = true
-        gui.simulateInput(parent, {[keys.view_unit] = true})
+        gui.simulateInput(parent, {[kmap.view_unit] = true})
     end
 end
 
 function manipulator:zoom_unit(u)
     local parent = self._native.parent
     if self:parent_select_unit(u) then
-        gui.simulateInput(parent, {[keys.zoom_unit] = true})
+        gui.simulateInput(parent, {[kmap.zoom_unit] = true})
         self:dismiss()
     end
 end

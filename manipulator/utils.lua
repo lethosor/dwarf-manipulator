@@ -184,7 +184,7 @@ function OutputKeyString(pen, x, y, key, str)
     OutputString(pen, x + #disp, y, ': ' .. str)
 end
 
-function process_keys(keys)
+function process_keys(keys, kmap)
     if keys.CURSOR_UPLEFT then
         keys.CURSOR_UP = true
         keys.CURSOR_LEFT = true
@@ -227,6 +227,13 @@ function process_keys(keys)
     if keys.STANDARDSCROLL_LEFT then keys.CURSOR_LEFT = true end
     if keys.STANDARDSCROLL_PAGEUP then keys.CURSOR_UP_FAST = true end
     if keys.STANDARDSCROLL_PAGEDOWN then keys.CURSOR_DOWN_FAST = true end
+    if kmap then
+        for name, key_id in pairs(kmap) do
+            if keys[df.interface_key[key_id]] then
+                keys[name] = true
+            end
+        end
+    end
 end
 
 function in_bounds(x, y, coords)
