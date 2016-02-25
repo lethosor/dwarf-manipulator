@@ -52,6 +52,19 @@ function strip_whitespace(str)
     return str:gsub('^%s+', ''):gsub('%s+$', '')
 end
 
+function split_string(self, delimiter, raw)
+    local result = {}
+    local from = 1
+    local delim_from, delim_to = self:find(delimiter, from, raw)
+    while delim_from do
+        table.insert(result, self:sub(from, delim_from-1))
+        from  = delim_to + 1
+        delim_from, delim_to = self:find(delimiter, from, raw)
+    end
+    table.insert(result, self:sub(from))
+    return result
+end
+
 function join_pairs(...)
     -- Returns a generator with all key/value pairs from multiple tables
     -- DFHack-generated userdata does not support next(), so it is necessary to
@@ -94,28 +107,47 @@ function scroll_index(index, delta, min, max, opts)
     return index
 end
 
-if dfhack.units.getSquadName == nil then
-    function dfhack.units.getSquadName(unit)
-        if (unit.military.squad_id == -1) then return "" end
-        local squad = df.squad.find(unit.military.squad_id);
-        if not squad then return "" end
-        if (#squad.alias > 0) then return squad.alias end
-        return dfhack.TranslateName(squad.name, true)
+function fallback_function(name, func)
+    local parts = split_string(name, '.', true)
+    local field = table.remove(parts, #parts)
+    local parent = _G
+    for _, p in pairs(parts) do parent = parent[p] end
+    if not parent[field] then
+        print('warning: patching function: ' .. name)
+        parent[field] = func
     end
 end
 
-if dfhack.units.getKillCount == nil then
-    function dfhack.units.getKillCount(unit)
-        local histfig = df.historical_figure.find(unit.hist_figure_id)
-        local count = 0
-        if histfig and histfig.info.kills then
-            for _, v in pairs(histfig.info.kills.killed_count) do
-                count = count + v
-            end
+fallback_function('dfhack.units.getSquadName', function(unit)
+    if (unit.military.squad_id == -1) then return "" end
+    local squad = df.squad.find(unit.military.squad_id);
+    if not squad then return "" end
+    if (#squad.alias > 0) then return squad.alias end
+    return dfhack.TranslateName(squad.name, true)
+end)
+
+fallback_function('dfhack.units.getKillCount', function(unit)
+    local histfig = df.historical_figure.find(unit.hist_figure_id)
+    local count = 0
+    if histfig and histfig.info.kills then
+        for _, v in pairs(histfig.info.kills.killed_count) do
+            count = count + v
         end
-        return count
     end
-end
+    return count
+end)
+
+fallback_function('dfhack.units.isOwnGroup', function(unit)
+    local histfig = df.historical_figure.find(unit.hist_figure_id)
+    if not histfig then return false end
+    for _, link in pairs(histfig.entity_links) do
+        if link.entity_id == df.global.ui.group_id and
+                link:getType() == df.histfig_entity_link_type.MEMBER then
+            return true
+        end
+    end
+    return false
+end)
 
 function colored_dialog(color, default_title)
     return function(title, desc)
