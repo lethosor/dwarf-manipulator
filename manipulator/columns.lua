@@ -296,7 +296,7 @@ Column{
 Column{
     id = 'speed',
     title = 'Speed',
-    spec = 'sp',
+    spec = 'spd',
     callback = wrap(dfhack.units.computeMovementSpeed),
     color = COLOR_GREY,
 }
