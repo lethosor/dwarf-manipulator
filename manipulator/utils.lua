@@ -319,6 +319,10 @@ function sort.column(u1, u2, column)
 end
 
 function basic_compare(a, b)
+    if type(a) == 'boolean' and type(b) == 'boolean' then
+        a = a and 1 or 0
+        b = b and 1 or 0
+    end
     if a > b then return 1
     elseif a < b then return -1
     else return 0
@@ -391,20 +395,39 @@ end
 function Column:compare(u1, u2)
     local ret = nil
     if self.cmp_units then
-        ret = self.cmp_units(u1, u2)
+        ret = {self.cmp_units(u1, u2)}
     elseif self.cmp_values then
-        ret = self.cmp_values(self:lookup(u1), self:lookup(u2))
+        ret = {self.cmp_values(self:lookup(u1), self:lookup(u2))}
     end
-    if ret ~= nil then
-        return ret
-    else
+    if not ret or #ret == 0 then
         return basic_compare(self:lookup(u1), self:lookup(u2))
+    elseif #ret == 1 then
+        return ret[1]
+    elseif #ret == 2 then
+        return basic_compare(table.unpack(ret))
+    else
+        error('invalid number of return values from comparator')
     end
 end
 
 function Column:clear_cache()
     self.cache = {}
 end
+
+column_helpers = {
+    CheckColumn = function(args)
+        local callback = check_nil(args.callback, 'No callback given', true)
+        args.callback = function(unit)
+            return callback(unit) and string.char(251) or '-'
+        end
+        args.color = args.color or function(unit)
+            return callback(unit) and COLOR_LIGHTGREEN or COLOR_DARKGREY
+        end
+        args.compare_units = function(u1, u2)
+            return callback(u2), callback(u1)
+        end
+    end,
+}
 
 function column_wrap_func(func)
     return function(unit)
@@ -438,6 +461,12 @@ function load_columns(scr)
             }
         }
     }
+    for name, helper in pairs(column_helpers) do
+        env[name] = function(args)
+            helper(args)
+            env.Column(args)
+        end
+    end
     setmetatable(env, {__index = _ENV})
     m_module.load('columns', {env = env})
     if #columns < 1 then qerror('No columns found') end

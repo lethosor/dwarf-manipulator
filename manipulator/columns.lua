@@ -33,6 +33,13 @@ Valid parameters to Column{}:
     considered larger.
     If these functions are omitted or return nil, the standard comparison
     operators (< and >) are used.
+    If two values are returned, they will be compared with the standard
+    comparison operators.
+
+Useful alternatives to Column:
+- CheckColumn: a read-only checkbox
+    callback should return a boolean value
+    implements color and compare_units
 ]]
 
 if not Column then
@@ -341,4 +348,11 @@ Column{
     spec = 'ri',
     callback = function(unit) return unit.id end,
     color = COLOR_GREY,
+}
+
+CheckColumn{
+    id = 'is_citizen',
+    title = 'Is citizen',
+    header = 'Cit',
+    callback = wrap(dfhack.units.isCitizen),
 }
