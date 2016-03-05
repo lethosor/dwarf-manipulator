@@ -38,6 +38,10 @@ function manipulator:init(args)
     self.grid_rows = {}
     self.diff_enabled = if_nil(storage.diff_enabled, true)
     self.labor_changes = {added = 0, removed = 0}
+    self.labor_counts = {}
+    for id in ipairs(df.unit_labor) do
+        self.labor_counts[id] = 0
+    end
     self.menu_page = enum({
         'main',
         'display',
@@ -134,16 +138,6 @@ function manipulator:onRenderBody(p)
         OutputString({fg = fg, bg = bg}, x, 1, col.label:sub(1, 1))
         OutputString({fg = fg, bg = bg}, x, 2, col.label:sub(2, 2))
         x = x + 1
-    end
-    if gps.mouse_x >= grid_start_x and gps.mouse_y >= 1 and gps.mouse_y <= 2 then
-        local caption = ''
-        local col = SKILL_COLUMNS[gps.mouse_x - grid_start_x + self.grid_start]
-        if col.labor ~= df.unit_labor.NONE then
-            caption = df.unit_labor.attrs[col.labor].caption
-        elseif col.skill ~= df.job_skill.NONE then
-            caption = df.job_skill.attrs[col.skill].caption_noun
-        end
-        OutputString(COLOR_GREY, math.min(gps.mouse_x, gps.dimx - #caption - 1), 3, caption)
     end
     y = self.list_top_margin + 1
     self.list_end = self.list_start + math.min(self.unit_max - self.list_start, gps.dimy - self.list_bottom_margin - self.list_top_margin - 2)
@@ -285,6 +279,18 @@ function manipulator:onRenderBody(p)
             col_start_x[id] + col.width - 1, self.list_top_margin - 1}
     end
     OutputString({fg=COLOR_BLACK, bg=COLOR_DARKGREY}, 2, gps.dimy - 1, "manipulator " .. VERSION)
+    local mx = gps.mouse_x
+    local my = gps.mouse_y
+    if in_bounds(mx, my, self.bounds.grid_header) or in_bounds(mx, my, self.bounds.grid) then
+        local caption = ''
+        local col = SKILL_COLUMNS[mx - grid_start_x + self.grid_start]
+        if col.labor ~= df.unit_labor.NONE then
+            caption = ('%s (%i)'):format(df.unit_labor.attrs[col.labor].caption, self.labor_counts[col.labor])
+        elseif col.skill ~= df.job_skill.NONE then
+            caption = df.job_skill.attrs[col.skill].caption_noun
+        end
+        OutputString(COLOR_GREY, math.min(mx, gps.dimx - #caption - 1), 3, caption)
+    end
 end
 
 function manipulator:update_list_ids()
@@ -567,6 +573,9 @@ function manipulator:update_labor_changes()
     p_start('update_labor_changes')
     self.labor_changes.added = 0
     self.labor_changes.removed = 0
+    for id in ipairs(df.unit_labor) do
+        self.labor_counts[id] = 0
+    end
     for _, unit in pairs(self.units) do
         unit.labor_changes.added = 0
         unit.labor_changes.removed = 0
@@ -577,6 +586,9 @@ function manipulator:update_labor_changes()
             elseif not state and unit.orig_labors[labor] then
                 self.labor_changes.removed = self.labor_changes.removed + 1
                 unit.labor_changes.removed = unit.labor_changes.removed + 1
+            end
+            if state then
+                self.labor_counts[labor] = self.labor_counts[labor] + 1
             end
         end
     end
