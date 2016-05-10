@@ -82,6 +82,7 @@ function manipulator:init(args)
         u.labor_changes = {added = 0, removed = 0}
     end
     self:update_list_ids()
+    self:update_labor_changes()
     p_end('init units')
     self:draw_grid()
     self.all_columns = load_columns(self)
