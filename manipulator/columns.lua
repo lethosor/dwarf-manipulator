@@ -266,10 +266,28 @@ Column{
     desc = 'Current job, or "No Job"',
     spec = 'j',
     callback = function(unit)
-        return unit.job.current_job and dfhack.job.getName(unit.job.current_job) or 'No Job'
+        if unit.job.current_job then
+            return dfhack.job.getName(unit.job.current_job)
+        elseif #unit.social_activities > 0 then
+            local activity = df.activity_entry.find(unit.social_activities[#unit.social_activities - 1])
+            local event = activity.events[#activity.events - 1]
+            local tmp = df.new('string')
+            event:getName(unit.id, tmp)
+            local name = tmp.value
+            df.delete(tmp)
+            return name
+        else
+            return 'No Job'
+        end
     end,
     color = function(unit)
-        return unit.job.current_job and COLOR_LIGHTCYAN or COLOR_YELLOW
+        if unit.job.current_job then
+            return COLOR_LIGHTCYAN
+        elseif #unit.social_activities > 0 then
+            return COLOR_LIGHTGREEN
+        else
+            return COLOR_YELLOW
+        end
     end,
     compare_units = function(a, b)
         if a.job.current_job and not b.job.current_job then
