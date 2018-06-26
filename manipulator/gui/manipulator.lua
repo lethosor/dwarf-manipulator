@@ -55,7 +55,7 @@ function manipulator:init(args)
         u.list_ids = {all = 0, profession = 0, group = 0}
         u.allow_edit = true
         if not dfhack.units.isOwnCiv(u._native) or not dfhack.units.isOwnGroup(u._native) or
-                u.flags1.dead or u.flags2.visitor or u.flags3.ghostly or
+                u.flags1.inactive or u.flags2.visitor or u.flags3.ghostly or
                 not df.profession.attrs[u.profession].can_assign_labor then
             u.allow_edit = false
         end
